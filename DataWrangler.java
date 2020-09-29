@@ -79,6 +79,7 @@ public class DataWrangler {
         if(info.length < 5) {
           System.out.println("line: " + cnt + " does not have the required infomation for the book.");
           System.out.println("The required infomation is title, author, publisher, publication year, and ISBN and in that order");
+          scan.close();
           return false;
         }
         
