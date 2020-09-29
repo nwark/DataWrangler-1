@@ -1,4 +1,4 @@
-// --== CS400 File Header Information ==--
+--== CS400 File Header Information ==--
 // Name: Nolan Wark
 // Email: nwark@wisc.edu
 // Team: AD
@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class DataWrangler {
-  public static boolean readInputFile(BackEndHash tableName, String fileName) throws FileNotFoundException{
+  public static boolean readInputFile(HashTableMap<String, Book> tableName, String fileName) throws FileNotFoundException{
     //Title, Author, Publisher, Publication Year, ISBN
     final int infoTypes = 5;
     
@@ -22,9 +22,22 @@ public class DataWrangler {
       fileName += ".csv";
     }
     
+    String filePath = System.getProperty("user.dir");
+    
     try {
-      fileName = System.getProperty("user.dir") + "\\" + fileName;
-      File readFile = new File(fileName);
+      filePath = System.getProperty("user.dir");
+      for(int i = 0; i < filePath.length(); i++) {
+        if(filePath.charAt(i) == '/') {
+          filePath += filePath.charAt(i) + fileName;
+        }
+        if(filePath.charAt(i) == '\\') {
+          filePath += filePath.charAt(i) + fileName;
+        }
+        if(i == filePath.length() - 1) {
+          filePath += '/' + fileName;
+        }
+      }
+      File readFile = new File(filePath);
       Scanner scan = new Scanner(readFile);
       String[] variables = new String[infoTypes];
       String[] info = new String[infoTypes];
@@ -54,23 +67,62 @@ public class DataWrangler {
         return false;
       }
       
+      int cnt = 1;
       //creates the book object one line at a time
       while(scan.hasNextLine()) {
         info = scan.nextLine().split(","); //scans in info
+        cnt++;
+        
+        if(info.length < 5) {
+          System.out.println("line: " + cnt + " does not have the required infomation for the book.");
+          System.out.println("The required infomation is title, author, publisher, publication year, and ISBN and in that order");
+          return false;
+        }
         
         if(info.length > 5) {
           String[] temp = new String[infoTypes];
-          temp[0] = "";
+          //if the title has a comma in it
+            String titleDif = "";
+          if(info[0].contains("\"")) {
+            int find = 1;
+            while(find < info.length) {
+              if(info[find].contains("\"")) {
+                break;
+              }
+              if(find == info.length - 1) {
+                break;
+              }
+              find++;
+            }
+            if(info[find].contains("\"")) {
+              for(int i = 0; i <= find; i++) {
+                titleDif += info[i];
+                if(i < find) {
+                  titleDif += ",";
+                }
+              }
+            }
+          }
+          //if the publisher has a comma in it
+            String pubDif = "";
+          if(info[info.length - 3].contains("\"")) {
+            pubDif = info[info.length - 4] + "," + info[info.length - 3];
+          }
+          //put it together
           temp[4] = info[info.length - 1];
           temp[3] = info[info.length - 2];
-          temp[2] = info[info.length - 3];
-          temp[1] = info[info.length - 4];
-          
-          for(int i = 0; i < info.length - 4; i++) {
-            temp[0] += info[i];
-            if(i + 1 < info.length - 4) {
-              temp[0] += ",";
+          if(pubDif.length() > 0) {//if publisher had comma
+            temp[2] = pubDif;
+            temp[1] = info[info.length - 5];
+            if(titleDif.length() > 0) {//if the publisher and title had commas
+              temp[0] = titleDif;
+            } else {//if publisher had comma but the title did not
+              temp[0] = info[0];
             }
+          } else {//if publisher did not have a comma
+            temp[2] = info[info.length - 3];
+            temp[1] = info[info.length - 4];
+            temp[0] = titleDif;
           }
           
           info = temp;
@@ -79,7 +131,7 @@ public class DataWrangler {
         //creates book
         Book newBook = new Book(info[0], info[1], info[2], Integer.parseInt(info[3]), info[4]);
         //backEndfunction that will add this book to a hash table
-        tableName.add(newBook);
+        tableName.put(newBook.getISBN(), newBook);
       }
     
       scan.close();
