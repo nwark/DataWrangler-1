@@ -1,4 +1,4 @@
---== CS400 File Header Information ==--
+// --== CS400 File Header Information ==--
 // Name: Nolan Wark
 // Email: nwark@wisc.edu
 // Team: AD
@@ -29,12 +29,15 @@ public class DataWrangler {
       for(int i = 0; i < filePath.length(); i++) {
         if(filePath.charAt(i) == '/') {
           filePath += filePath.charAt(i) + fileName;
+          break;
         }
         if(filePath.charAt(i) == '\\') {
           filePath += filePath.charAt(i) + fileName;
+          break;
         }
         if(i == filePath.length() - 1) {
           filePath += '/' + fileName;
+          break;
         }
       }
       File readFile = new File(filePath);
